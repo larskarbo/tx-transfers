@@ -21,11 +21,12 @@ const getTransfers = (log: Log) => {
 			return {
 				from: fromAddress,
 				to: toAddress,
-				amount: 1,
+				hash: log.transactionHash,
+				contractAddress: log.address,
+				amount: '1',
 				tokenId: new TinyBig(tokenId).toFixed(),
-				address: log.address,
 				type: 'erc721',
-			}
+			} as const
 		}
 
 		const amount = new TinyBig(log.data).toFixed()
@@ -33,10 +34,11 @@ const getTransfers = (log: Log) => {
 		return {
 			from: fromAddress,
 			to: toAddress,
+			hash: log.transactionHash,
+			contractAddress: log.address,
 			amount: amount,
-			address: log.address,
 			type: 'erc20',
-		}
+		} as const
 	}
 
 	if (log.topics[0] && log.topics[0] === transferSingleSig) {
@@ -50,22 +52,39 @@ const getTransfers = (log: Log) => {
 		return {
 			from: fromAddress,
 			to: toAddress,
+			hash: log.transactionHash,
+			contractAddress: log.address,
 			amount: value,
 			tokenId: tokenId,
-			address: log.address,
 			type: 'erc1155',
-		}
+		} as const
 	}
+}
+
+type Transfer = {
+	from: string
+	contractAddress: string
+	to: string
+	amount: string
+	hash: string
+	type: 'erc20' | 'erc721' | 'erc1155'
 }
 
 export const getTxTransfers = async (
 	txHash: string,
 	provider: JsonRpcProvider | EthersJsonRpcProvider,
-) => {
+): Promise<Transfer[]> => {
 	const receipt = await provider.getTransactionReceipt(txHash)
 	const logs = receipt.logs
 
 	const transfers = logs.map((log) => getTransfers(log))
 
-	return transfers.filter((t) => t !== undefined)
+	// eslint-disable-next-line unicorn/no-array-callback-reference
+	return transfers.filter(isNotUndefinedOrNull)
+}
+
+export const isNotUndefinedOrNull = <T>(
+	item: T | undefined | null,
+): item is T => {
+	return !!item
 }
