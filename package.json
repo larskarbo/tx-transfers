@@ -1,5 +1,5 @@
 {
-	"name": "ts-lib-starter",
+	"name": "tx-transfers",
 	"version": "0.0.0",
 	"type": "module",
 	"description": "boilerplate for your next TypeScript library",
@@ -59,6 +59,8 @@
 	},
 	"packageManager": "pnpm@7.11.0",
 	"dependencies": {
-		"essential-eth": "^0.6.2"
+		"essential-eth": "^0.6.2",
+		"ethers": "^5.7.0",
+		"mem": "^9.0.2"
 	}
 }
