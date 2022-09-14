@@ -61,20 +61,31 @@ const getTransfers = (log: Log) => {
 	}
 }
 
-type Transfer = {
-	from: string
-	contractAddress: string
-	to: string
-	amount: string
-	hash: string
-	type: 'erc20' | 'erc721' | 'erc1155'
-}
+type Transfer =
+	& {
+		from: string
+		contractAddress: string
+		to: string
+		amount: string
+		hash: string
+	}
+	& (
+		| {
+			type: 'erc20'
+			tokenId: undefined
+		}
+		| {
+			type: 'erc721' | 'erc1155'
+			tokenId: string
+		}
+	)
 
 export const getTxTransfers = async (
 	txHash: string,
 	provider: JsonRpcProvider | EthersJsonRpcProvider,
 ): Promise<Transfer[]> => {
 	const receipt = await provider.getTransactionReceipt(txHash)
+	console.log('receipt: ', receipt)
 	const logs = receipt.logs
 
 	const transfers = logs.map((log) => getTransfers(log))
